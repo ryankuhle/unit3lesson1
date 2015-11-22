@@ -35,6 +35,7 @@ def activityStatus():
     r = requests.get('http://www.citibikenyc.com/stations/json')
     df = json_normalize(r.json()['stationBeanList'])
     exec_time = parse(r.json()['executionTime'])
+    print "Insert data at: %s" % exec_time
     with con:
         cur.execute('INSERT INTO available_bikes (execution_time) VALUES (?)', (exec_time.strftime('%s'),))
     id_bikes = collections.defaultdict(int) #defaultdict to store available bikes by station
@@ -44,4 +45,11 @@ def activityStatus():
         for k, v in id_bikes.iteritems():
             cur.execute("UPDATE available_bikes SET _" + str(k) + " = " + str(v) + " WHERE execution_time = " + exec_time.strftime('%s') + ";")
 
-activityStatus()
+t = 0
+
+while t < 60:
+    activityStatus()
+    t += 1
+    time.sleep(60)
+
+print "Done! Thank you for your patience."
